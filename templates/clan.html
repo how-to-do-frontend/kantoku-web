@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %} Clan WIP {% endblock %}
+{% block content %}
+{% if getClan(id) == None %}
+This clan could not be found!
+{% else %}
+<h1 class="has-text-centered">[{{getClan(id)["tag"]}}] {{getClan(id)["name"]}}</h1>
+Owner: {{ getClan(id)["owner"]["name"] }}
+<br>
+Members: <br>
+{% for i in range(0, listOfMembers(id)|length) %}
+{{listOfMembers(id)[i]}}
+<br>
+{% endfor %}
+{% endif %}
+{% endblock %}

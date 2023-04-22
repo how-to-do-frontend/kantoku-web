@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %} home page {% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="/static/css/pages/home.css">
+<meta property="og:title" content="home | Kantoku" />
+<meta property="og:description" content="Kantoku is an osu! private server with lots to offer." />
+
+{% endblock %}
+
+{% block content %}
+
+{% if flash %}
+<div class='noti-banner noti-banner-warning'>
+  <div class="container">
+    <div class="noti-column">
+      <div class='noti-col noti-col-icon'></div>
+      <div class='noti-col noti-col-label'>
+        <div class='noti-bannertype'>
+          {% if status=='error' %}
+          Warning
+          {% elif status=='success' %}
+          Notice
+          {% endif %}
+        </div>
+        <div class='noti-bannertext'>
+          {% if status=='error' %}
+          Uh oh! Be careful!
+          {% elif status=='success' %}
+          Hey! Listen!
+          {% endif %}
+        </div>
+      </div>
+      <div class='noti-banner-text'>
+        {{ flash }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="hero splah p-less is-fullheight-with-navbar" id="home-hero">
+  <div class="splah container flex">
+    <div class="columns flex-vcenter">
+      <div class="has-text-centered text-center flex-vcenter flex-lcenter" id="title">
+        <h1 class="text-center title-main is-spaced is-size-2-desktop is-size-1-fullhd">{{ appName() }}</h1>
+        <h2 class="text-center subtitle">
+          We are an osu! casual relax server based off 
+          <a href="http://github.com/cmyui/gulag">gulag</a>
+          and <a href="https://github.com/Varkaria/guweb">guweb</a>
+          on GitHub - we're fully open source!
+        </h2>
+        <div class="onlineplayers">
+          <span>
+            <h1>
+            <strong class="count">
+              {{ getOnlineUsers() }} / {{ getTotalUsers() - 1}}
+            </strong>
+            <br>
+            Online / Registered
+          </h1>
+          </span>
+        </div>
+
+        {% if not session.authenticated %}
+        <div class="buttons has-text-centered text-center flex-vcenter flex-lcenter">
+          <a class="button is-primary" href="/register">
+            <strong>Sign up</strong>
+          </a>
+          <a class="button is-light" href="/login">
+            Log in
+          </a>
+        </div>
+        {% endif %}
+      <!--<div class="card text-left flex-left">
+        <span class="text-left">Top rx!std score</span>
+      </div>-->
+      <!--<div class="column flex flex-lcenter" id="mascot">
+      <img class="gulag-avatar"></img>-->
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="has-text-centered py-4">
+    <h2 class="title mb-6">Some of our coolest features</h2>
+    <div class="columns has-text-left mb-6">
+      <div class="column is-4">
+        <div class="columns">
+          <div class="column is-2">
+          </div>
+          <div class="column is-10">
+            <h4 class="title is-spaced is-4">Custom PP System</h4>
+            <p class="subtitle is-6">Fed up with Bancho's PP system? Join Kantoku and have a fair reward for your skills!
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="columns">
+          <div class="column is-2">
+            <i class="image is-32x32 fas fa-name-card"></i>
+          </div>
+            <h4 class="title is-spaced is-4">Profile Customisation</h4>
+            <p class="subtitle is-6">Customise your profile with banners, profile pictures and even backgrounds!</p>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if not session.authenticated %}
+<section class="hero">
+  <div class="hero-body">
+    <div class="has-text-centered">
+      <h1 class="title is-spaced">What are you waiting for?</h1>
+      <h2 class="subtitle">Join {{ appName() }}! It's risk-free! You won't get your account banned on official servers
+        if
+        you play here with us! And don't worry, as you can always switch between the official servers and us at any time!</h2>
+      <div class="buttons is-centered"><a class="control button is-primary" href="/register">Sign up for free</a><a
+          class="control button is-light" href="/login">Login</a></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

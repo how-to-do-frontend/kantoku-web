@@ -1,0 +1,94 @@
+<script type="text/javascript">
+    var the_domain = '{{ domain() }}'
+</script>
+<nav id="navbar" class="navbar is-primary">
+    <div class="navbar-brand">
+        <a class="navbar-item navbar-logo" href="/home">
+            {{ appName() }}
+        </a>
+
+        <a role="button" class="navbar-burger" id="navbar-burger" onclick="togglenavbar()">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+
+    <div id="navbar" class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item" href="/leaderboard">
+                leaderboards
+            </a>
+
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    info
+                </a>
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="/rules">
+                        rules
+                    </a>
+
+                    <a class="navbar-item" href="/team">
+                        team
+                    </a>
+
+                    <hr class="navbar-divider">
+
+                    <a class="navbar-item" href="/discord">
+                        discord
+                    </a>
+                </div>
+            </div>
+
+            {% if session.authenticated and session.user_data['is_staff'] %}
+            <a class="navbar-item" href="/admin">
+                Admin
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="navbar-end">
+            <div class="navbar-item has-dropdown is-hoverable" style="align-items: center;">
+                <div class="navbar-search">
+                    <input autocomplete="off" type="text" placeholder="Looking for someone?" id="u-search" oninput="search()">
+                </div>
+                <div id="u-search-content" class="navbar-dropdown" style="display: none;">
+                </div>
+            </div>
+            {% if session.authenticated %}
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    {{ session.user_data['name'] }}
+                </a>
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="/u/{{ session.user_data['id'] }}">
+                        profile
+                    </a>
+                    <i class=""></i>
+                    <a class="navbar-item" href="/settings">    
+                        settings
+                    </a>
+                </div>
+            </div>
+            <div class="navbar-item">
+                <a class="button is-light" href="/logout">
+                    Logout
+                </a>
+            </div>
+            {% else %}
+            <div class="navbar-item">
+                <div class="buttons">
+                    <a class="button is-primary" href="/register">
+                        <strong>sign up</strong>
+                    </a>
+                    <a class="button is-light" href="/login">
+                        log in
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+</nav>
