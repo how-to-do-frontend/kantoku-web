@@ -86,56 +86,6 @@ async def home_account_edit():
 @login_required
 async def settings_profile():
     return await render_template('settings/profile.html')
-@frontend.route('/clan_create')
-async def testing():
-    return await render_template('create_clan.html')
-@frontend.route('/clan_create', methods=['POST'])
-@login_required
-async def clan_create_post():
-    form = await request.form
-
-    new_name = form.get('username', type=str)
-    new_email = form.get('email', type=str)
-
-    if new_name is None or new_email is None:
-        return await flash('error', 'Invalid parameters.', 'home')
-
-    old_name = session['user_data']['name']
-    old_email = session['user_data']['email']
-
-    # no data has changed; deny post
-    if (
-        new_name == old_name and
-        new_email == old_email
-    ):
-        return await flash('error', 'No changes have been made.', 'settings/profile')
-
-    if new_name != old_name:
-
-        # Usernames must:
-        # - be within 2-15 characters in length
-        # - not contain both ' ' and '_', one is fine
-        # - not be in the config's `disallowed_names` list
-        # - not already be taken by another player
-        if '_' in new_name or ' ' in new_name:
-            return await flash('error', 'Underscores and spaces are not allowed in clan tags.', 'clan_create')
-
-        if await glob.db.fetch('SELECT 1 FROM clans WHERE name = %s', [new_name]):
-            return await flash('error', 'Your clan tag is already taken.', 'clan_create')
-        created_at = datetime.now()
-        # username change successful
-        await glob.db.execute(
-            "INSERT INTO clans "
-        "(name, tag, created_at, owner) "
-        "VALUES (:name, :tag, :created_at, :user_id)",
-        {"name": new_email, "tag": new_name, "created_at": created_at, "user_id": session['user_data']['id']}
-        )
-
-    # logout
-    session.pop('authenticated', None)
-    session.pop('user_data', None)
-    return await flash('success', 'Your username/email have been changed! Please login again.', 'login')
-
 @frontend.route('/settings/profile', methods=['POST'])
 @login_required
 async def settings_profile_post():
