@@ -9,6 +9,7 @@ import time
 
 from cmyui.logging import Ansi
 from cmyui.logging import log
+from cmyui.osu import Mods
 from functools import wraps
 from PIL import Image
 from pathlib import Path
@@ -48,15 +49,16 @@ async def rules():
     return await render_template('rules.html')
 @frontend.route('/team')
 async def team():
+    tree = await glob.db.fetchall('SELECT `id`, `name`, `priv` FROM users WHERE id = 3')      
     team = {
-        'Developers': [],
         'Administrators': [],
+        'Developers': [],
         'Moderators': [],
         'Nominators': [],
         'Tournament Managers': [],
     }
 
-    for candidate in await glob.db.fetchall('SELECT `id`, `name`, `priv` FROM users WHERE priv > 3'):
+    for candidate in await glob.db.fetchall('SELECT `id`, `name`, `priv` FROM users WHERE priv > 3 AND id > 3'):
         if candidate['priv'] & Privileges.Staff or Privileges.Nominator:
             priv = Privileges(candidate['priv'])
 
@@ -70,7 +72,7 @@ async def team():
             }.items():
                 if alias_priv in priv:
                     team[alias].append(candidate)
-                    break
+                    break     
 
     return await render_template(
         'team.html',
@@ -104,7 +106,8 @@ async def settings_profile_post():
     # no data has changed; deny post
     if (
         new_name == old_name and
-        new_email == old_email
+        new_email == old_email and
+        new_country == "xx"
     ):
         return await flash('error', 'No changes have been made.', 'settings/profile')
 
@@ -136,7 +139,9 @@ async def settings_profile_post():
             'WHERE id = %s',
             [new_name, safe_name, session['user_data']['id']]
         )
-
+        session.pop('authenticated', None)
+        session.pop('user_data', None)
+        return await flash('success', 'Your username/email have been changed! Please login again.', 'login')
     if new_email != old_email:
         # Emails must:
         # - match the regex `^[^@\s]{1,200}@[^@\s\.]{1,30}\.[^@\.\s]{1,24}$`
@@ -154,11 +159,12 @@ async def settings_profile_post():
             'WHERE id = %s',
             [new_email, session['user_data']['id']]
         )
+        session.pop('authenticated', None)
+        session.pop('user_data', None)
+        return await flash('success', 'Your username/email have been changed! Please login again.', 'login')
     print(await glob.db.execute('UPDATE users SET country=%s WHERE id=%s', [new_country, session['user_data']['id']]))
+    return await flash("success", 'Your country has been changed!', 'home')
     # logout
-    session.pop('authenticated', None)
-    session.pop('user_data', None)
-    return await flash('success', 'Your username/email have been changed! Please login again.', 'login')
 
 @frontend.route('/settings/avatar')
 @login_required
@@ -362,8 +368,130 @@ async def profile_select(id):
         return (await render_template('404.html'), 404)
 
     user_data['customisation'] = utils.has_profile_customizations(user_data['id'])
-    return await render_template('profile.html', user=user_data, mode=mode, mods=mods)
+    badges = []
 
+    if user_data["priv"] & Privileges.Dangerous:
+        badges.append(("Developer", "fa-code", 7))
+    if user_data["priv"] & Privileges.Admin:
+        badges.append(("Administrator", "fa-user", 9.6))
+    if user_data["priv"] & Privileges.Mod:
+        badges.append(("Moderator", "fa-user-check", 8))
+    if user_data["priv"] & Privileges.Nominator:
+        badges.append(("Nominator", "fa-pen", 9))
+    if user_data["priv"] & Privileges.Supporter:
+        badges.append(("Donator", "fa-dollar-sign", 11.4))
+
+    return await render_template('profile.html', user=user_data, mode=mode, mods=mods, badges=badges)
+@frontend.route('/score/<score_id>')
+@frontend.route('/score/<score_id>/<mods>')
+async def get_player_score(score_id:int=0, mods:str = "vn"):
+    if score_id == 0:
+        return await flash('error', "This score does not exist!", "home")
+    if mods.lower() not in ["vn", "rx", "ap"]:
+        return await flash('error', "Valid mods are vn, rx and ap!", "home")
+
+    # Check score
+    score = await glob.db.fetch("SELECT * FROM scores WHERE id=%s", score_id)
+    if not score:
+        return await flash('error', "Score not found!", "home")
+
+    # Get user
+    user = await glob.db.fetch("SELECT id, name, country, priv FROM users WHERE id=%s", score['userid'])
+
+
+
+    if Privileges.Normal not in Privileges(int(user['priv'])):
+        if not session:
+            return (await render_template('404.html'), 404)
+        elif Privileges.Admin not in Privileges(session['user_data']['priv']):
+            return (await render_template('404.html'), 404)
+
+    #Get Map
+    map_info = await glob.db.fetch("SELECT artist, title, version AS diffname, creator, "
+                                   "diff, mode, set_id, max_combo FROM maps WHERE md5=%s", score['map_md5'])
+    if not map_info:
+        log(f"Tried fetching scoreid {score_id} in {mods} (Route: /score/): Map with md5 '{score['map_md5']}' does not exist in database,"
+        " that shouldn't happen unless you deleted it manually", Ansi.RED)
+        return await flash('error', 'Could not display score, map does not exist in database', 'home')
+
+    #Change variables and stuff like that
+    try:
+        map_info['diff'] = round(map_info['diff'], 2)
+    except:
+        map_info['diff'] = map_info['diff']
+    score['grade'] = score['grade'].upper()
+    user['country'] = user['country'].upper()
+    user['banner'] = f"url(https://fysix.xyz/banners/{user['id']});"
+    map_info['banner_link'] = f"url('https://assets.ppy.sh/beatmaps/{map_info['set_id']}/covers/cover.jpg');"
+    score['acc'] = f"{round(float(score['acc']), 2)}%"
+    score['pp'] = round(float(score['pp']), 2)
+    score['max_combo_fix'] = f"{score['max_combo']}x"
+    #Calculation
+    grade_colors= {
+        "F": "#ff5959",
+        "D": "#ff5959",
+        "C": "#ff56da",
+        "B": "#3d97ff",
+        "A": "#2bff35",
+        "S": "#ffcc22",
+        "SH": "#cde7e7",
+        "X": "#ffcc22",
+        "XH": "#cde7e7",
+    }
+    try:
+        grade_shadow = grade_colors[score['grade'].upper()]
+    except:
+        grade_shadow = "#FFFFFF"
+
+    grade_convert = {"XH": "SS", "X": "SS", "SH": "S"}
+    try:
+        score['grade'] = grade_convert[score['grade']]
+    except:
+        score['grade'] = score['grade']
+    #add commas to score
+    score['score'] = "{:,}".format(int(score['score']))
+    #Make badges
+    user_priv = Privileges(user['priv'])
+    group_list = []
+    if Privileges.Normal not in user_priv:
+        group_list.append(["RESTRICTED", "#FFFFFF"])
+    else:
+        if int(user['id']) in [3,4]:
+            group_list.append(["OWNER", "#e84118"])
+        if Privileges.Dangerous in user_priv:
+            group_list.append(["DEV", "#9b59b6"])
+        elif Privileges.Admin in user_priv:
+            group_list.append(["ADM", "#fbc531"])
+        elif Privileges.Mod in user_priv:
+            group_list.append(["GMT", "#28a40c"])
+        if Privileges.Nominator in user_priv:
+            group_list.append(["BN", "#1e90ff"])
+        if Privileges.Alumni in user_priv:
+            group_list.append(["ALU", "#ea8685"])
+        if Privileges.Supporter in user_priv:
+            if Privileges.Premium in user_priv:
+                group_list.append(["❤❤", "#f78fb3"])
+            else:
+                group_list.append(["❤", "#f78fb3"])
+        elif Privileges.Premium in user_priv:
+            group_list.append(["❤❤", "#f78fb3"])
+        if Privileges.Whitelisted in user_priv:
+            group_list.append(["✓", "#28a40c"])
+
+    #Get status
+    async with glob.http.get(f"https://api.fysix.xyz/get_player_status?id={user['id']}") as resp:
+        resp = await resp.json()
+        if resp['player_status']['online'] == True:
+            player_status = ["#38c714", "Online"]
+        else:
+            player_status = ["#000000", "Offline"]
+
+    #Mods
+        if score['mods'] != 0:
+            score['mods'] = f"{Mods(int(score['mods']))!r}"
+    return await render_template('score.html', score=score, user=user, map_info=map_info,
+                                grade_shadow=grade_shadow, group_list=group_list,
+                                player_status=player_status, mode_mods=mods)
 @frontend.route('/clan/<cid>')
 @frontend.route('/c/<cid>')
 async def clan_page(cid):
@@ -393,6 +521,7 @@ async def login_post():
     form = await request.form
     username = form.get('username', type=str)
     passwd_txt = form.get('password', type=str)
+    print(passwd_txt)
 
     if username is None or passwd_txt is None:
         return await flash('error', 'Invalid parameters.', 'home')

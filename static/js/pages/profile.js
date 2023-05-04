@@ -234,3 +234,35 @@ new Vue({
     },
     computed: {}
 });
+function scoreMenu($this) {
+    const score_id = $($this).attr("data--score-id");
+    let menu;
+
+    $.ajax({
+        url: `https://fysix.xyz/score/${ score_id }`,
+        type: 'GET',
+        success: function(response) {
+            $($this).append(
+                $(`<div class="score-menu" data--score-id="${score_id}" onclick="viewDetails(this);"><div class="menu-contents"><i class="fa-solid fa-download"></i><span>View Details</span></div></div>`)
+            );
+        },
+        error: function(xhr) {
+            $($this).append(
+                 $(`<div class="score-menu score-unavailable"><div class="menu-contents"><i class="fa-solid fa-download"></i><span>no</span></div></div>`)
+            );
+        }
+    });
+}
+
+function downloadScore($this) {
+    const score_id = $($this).attr("data--score-id");
+
+    // Open link to download replay using API.
+    window.open(`${window.location.protocol}//api.fysix.xyz/get_replay?id=${ score_id }`, '_blank').focus();
+}
+function viewDetails($this) {
+    const score_id = $($this).attr("data--score-id");
+
+    // Open link to download replay using API.
+    window.open(`${window.location.protocol}//fysix.xyz/score/${ score_id }`, '_blank').focus();
+}

@@ -80,6 +80,13 @@ def captchaKey() -> str:
 def cctoFullName(cc):
     #FUCKING KILL ME OH MY GODD
     return country_dict[cc]
+import calendar
+import time
+@app.template_global()
+def timestamp():
+    current_GMT = time.gmtime()
+    time_stamp = calendar.timegm(current_GMT)
+    return time_stamp
 import requests
 @app.template_global()
 def getClanTag(id):

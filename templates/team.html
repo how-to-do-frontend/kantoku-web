@@ -10,6 +10,18 @@
 {% block content %}
 
 <div class="main-block team-page">
+    <p class="role-title">
+        Owner
+    </p>
+    <div class="people">
+        <div class="teammate" onclick="window.open('https://{{ domain() }}/u/3', '_blank');">
+            <img src="https://a.{{ domain() }}/3" alt="tree">
+
+            <span class="player-name">
+                tree
+            </span>
+        </div>
+    </div>  
     {% for role, teammates in team.items() %}
         {% if teammates != [] %}
             <p class="role-title">

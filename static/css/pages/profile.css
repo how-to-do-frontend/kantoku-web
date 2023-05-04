@@ -57,7 +57,28 @@
   object-fit: cover;
   transition: 0.2s ease;
 }
+.score-menu-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: -8px;
+  position: relative;
+  cursor: pointer;
+}
 
+.score-menu {
+  border-radius: 8px;
+  position: absolute;
+  right: 0;
+  background: #282626;
+  padding: 8px;
+}
+
+.score-menu:hover {
+  background: #251f1f;
+}
 .profile-stats-rank {
   width: 20px;
 }
@@ -137,6 +158,45 @@
 
 .is-striped {
   width: 100%;
+}
+.badge {
+  background-color: rgba(0,0,0,0);
+  border-radius: 50px;
+  transition: 0.3s ease;
+  width: 32px;
+  height: 32px;
+  margin-left: 3px;
+}
+
+.badge > .badge-icon, .badge-text {
+  display: inline-block;
+}
+
+.badge:hover {
+  width: 128px;
+}
+
+.badge:hover > .badge-icon {
+  margin-right: auto;
+}
+
+.badge:hover > .badge-text {
+  animation: 1.4s fadeIn;
+  animation-fill-mode: forwards;
+}
+
+.badge-text {
+  visibility: hidden;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  20% {
+    visibility: hidden;
+  }
+  100% {
+    visibility: visible;
+  }
 }
 
 .right-aligned {
