@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %} {{ user['name'] }}'s profile {% endblock %}
+<script src="https://kit.fontawesome.com/550094edeb.js" crossorigin="anonymous"></script>
 <meta content=" {{ user['name'] }}'s profile | kantoku" property="og:title">
 <meta content="Check out {{ user['name'] }}'s profile and many more on Kantoku!" property="og:description"/>
 {% macro scores(title, id) %}
@@ -21,16 +22,15 @@
                     <div class="map-title-block">
                         <div class="map-title">
                             <a class="beatmap-link" v-bind:href="'https://osu.ppy.sh/b/' + map.beatmap.id">
-                                <% map.beatmap.artist %> - <% map.beatmap.title %> [<% map.beatmap.version %>] <!--<span v-if="map.mods != 0">+ <% modsStr(map.mods) %></span>-->
+                                <% map.beatmap.artist %> - <% map.beatmap.title %> [<% map.beatmap.version %>] +<%map.mods_readable%> <!--<span v-if="map.mods != 0">+ <% modsStr(map.mods) %></span>-->
                             </a>
                         </div>
                         <div class="play-stats">
-                            <% addCommas(map.score) %> / <% map.max_combo %><b>x</b> +<% map.mods_readable %>
+                            <% addCommas(map.score) %> / <% map.max_combo %><b>x</b>
                         </div>
                         <div class="map-date">
                             <time>
-                                some time ago
-                                <% console.log(map.play_time) %>
+                                <% timeago.format(map.play_time) %>
                             </time>
                         </div>
                     </div>
@@ -52,6 +52,9 @@
                                         <% map.grade.replace("X", "SS" ).replace("H", "" ) %>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="score-menu-btn" v-bind:data--score-id="map.id" onclick="scoreMenu(this);">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
                             </div>
                         </div>
                     </div>
@@ -192,7 +195,7 @@
         </div>
         <div class="profile-flex">
             <div class="profile-avatar-area">
-                <img src="https://a.{{ domain() }}/{{ user['id'] }}" alt="avatar" class="rounded-avatar profile-avatar"
+                <img src="https://a.{{ domain() }}/{{ user['id']}}?{{timestamp()}}" alt="avatar" class="rounded-avatar profile-avatar"
                     onError="this.src='/static/images/avatar_notwork.png';">
             </div>
             <div class="bar-selection mode-selects">
@@ -222,11 +225,18 @@
                             class="mods-shorttext">AP</span></a>
                 </div>
             </div>
+            {% if badges.length != 0 %}
             <div class="bar-selection badge-selects">
-                <span>
-                    Badges not yet implemented!
-                </span>
+                {% for b in badges %}
+                    <div class="badge">
+                        <div class="badge-icon" style="margin: 8px 2px 7px {{ b[2] }}px">
+                            <i class="fa-solid {{ b[1] }}"></i>
+                        </div>
+                        <div class="badge-text">{{ b[0] }}</div>
+                    </div>
+                {% endfor %}
             </div>
+            {% endif %}
         </div>
     </div>
     <div class="second-block">

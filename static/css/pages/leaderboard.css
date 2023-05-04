@@ -224,11 +224,12 @@ table th {
   opacity: 1;
 }
 
-.mode-select.active,
 .simple-banner-switch.active {
   border-bottom-width: 6px;
   opacity: 1;
   font-weight: 600;
+  background: rgba(30, 30, 30, .52);
+  border-radius: 16px;
 }
 
 .main-selector {
