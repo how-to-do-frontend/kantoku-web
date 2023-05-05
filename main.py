@@ -9,7 +9,7 @@ import aiohttp
 import orjson
 from quart import Quart
 from quart import render_template
-
+import markdown2
 from cmyui.logging import Ansi
 from cmyui.logging import log
 from cmyui.mysql import AsyncSQLPool
@@ -45,7 +45,9 @@ async def shutdown() -> None:
 @app.template_global()
 def appVersion() -> str:
     return repr(version)
-
+@app.template_global()
+def render_markdown(md: str) -> str:
+    return markdown2.markdown(md)
 @app.template_global()
 def appName() -> str:
     return glob.config.app_name
