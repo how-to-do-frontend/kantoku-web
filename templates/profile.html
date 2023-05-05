@@ -3,6 +3,21 @@
 <script src="https://kit.fontawesome.com/550094edeb.js" crossorigin="anonymous"></script>
 <meta content=" {{ user['name'] }}'s profile | kantoku" property="og:title">
 <meta content="Check out {{ user['name'] }}'s profile and many more on Kantoku!" property="og:description"/>
+{% macro userpage(user) %} {% if user['userpage_content'] != None
+    and user['userpage_content'] != "" %}
+    <div class="log-block">
+      <div class="header">
+        <div class="title">
+          <i class="fas fa-address-book"></i> About Me
+        </div>
+      </div>
+      <div class="stats-block rank-block" style="padding: 12.5px">
+        <article class="reset-bulma-style">
+          {{ render_markdown(user['userpage_content']) | safe }}
+        </article>
+      </div>
+    </div>
+    {% endif %} {% endmacro %}
 {% macro scores(title, id) %}
 <div class="log-block" v-bind:class="{ 'load' : data.scores.{{ id }}.load }">
     <div class="header">
@@ -374,6 +389,7 @@
                 </div>-->
             </div>
             <div class="column">
+                {{ userpage(user) }}
                 {{ scores('Best Scores', 'best')}}
                 {{ scores('Recent Scores', 'recent')}}
                 {{ maps('Most Beatmaps Played', 'most')}}

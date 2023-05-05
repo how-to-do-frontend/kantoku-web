@@ -13,6 +13,7 @@ from cmyui.osu import Mods
 from functools import wraps
 from PIL import Image
 from pathlib import Path
+import markdown
 from quart import Blueprint
 from quart import redirect
 from quart import render_template
@@ -39,7 +40,33 @@ def login_required(func):
             return await flash('error', 'You must be logged in to access that page.', 'login')
         return await func(*args, **kwargs)
     return wrapper
+@frontend.route('/settings/aboutme')
+@login_required
+async def settings_aboutme():
+    user = await glob.db.fetch(
+        'SELECT userpage_content FROM users WHERE id = %s',
+        [session['user_data']['id']]
+    )
+    return await render_template('settings/aboutme.html', userpage_content=user['userpage_content'])
 
+@frontend.route('/settings/aboutme', methods=['POST'])
+@login_required
+async def settings_aboutme_post():
+    form = await request.form
+    userpage_content = form.get('userpage_content', type=str)
+    old_content = (await glob.db.fetch('SELECT userpage_content FROM users WHERE id = %s', [session['user_data']['id']]))['userpage_content']
+    if '<iframe' in userpage_content or '<script' in userpage_content:
+        return await render_template('settings/aboutme.html', flash='Not allowed method', status='error', userpage_content=old_content)
+    if (len(userpage_content) > 2048):
+        return await render_template('settings/aboutme.html', flash='Too long text', status='error', userpage_content=old_content)
+    await glob.db.execute(
+            'UPDATE users '
+            'SET userpage_content = %s '
+            'WHERE id = %s',
+            [userpage_content, session['user_data']['id']]
+        )
+    session['user_data']['userpage_content'] = userpage_content
+    return await render_template('settings/aboutme.html', userpage_content=userpage_content)
 @frontend.route('/home')
 @frontend.route('/')
 async def home():
@@ -346,14 +373,14 @@ async def profile_select(id):
     mode = request.args.get('mode', 'std', type=str) # 1. key 2. default value
     mods = request.args.get('mods', 'vn', type=str)
     user_data = await glob.db.fetch(
-        'SELECT name, safe_name, id, priv, country '
+        'SELECT name, safe_name, id, priv, country, userpage_content '
         'FROM users '
         'WHERE safe_name = %s OR id = %s LIMIT 1',
         [utils.get_safe_name(id), id]
     )
 
-    # no user
-    if not user_data:
+    # no user and no bot page
+    if not user_data or user_data["id"] == 1:
         return (await render_template('404.html'), 404)
 
     # make sure mode & mods are valid args
@@ -529,7 +556,7 @@ async def login_post():
     # check if account exists
     user_info = await glob.db.fetch(
         'SELECT id, name, email, priv, '
-        'pw_bcrypt, silence_end '
+        'pw_bcrypt, silence_end, api_key, userpage_content '
         'FROM users '
         'WHERE safe_name = %s',
         [utils.get_safe_name(username)]
@@ -595,6 +622,7 @@ async def login_post():
         'email': user_info['email'],
         'priv': user_info['priv'],
         'silence_end': user_info['silence_end'],
+        'userpage_content': user_info['userpage_content'],
         'is_staff': user_info['priv'] & Privileges.Staff != 0,
         'is_donator': user_info['priv'] & Privileges.Donator != 0
     }
