@@ -160,12 +160,25 @@
   width: 100%;
 }
 .badge {
-  background-color: rgba(0,0,0,0);
+  background-color: hsl(320,12%,15%);;
   border-radius: 50px;
   transition: 0.3s ease;
-  width: 32px;
-  height: 32px;
+  width: fit-content;
+  height: fit-content;
+  padding-bottom: calc(0.2em - 1px);
+  padding-left: 0.7em;
+  padding-right: 1em;
+  padding-top: calc(0.2em - 1px);
   margin-left: 3px;
+}
+.badge {
+  display: inline-block;
+  background: hsl(var(--main),12%,15%);
+  color: white;
+  border-radius: 25px;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .badge > .badge-icon, .badge-text {
@@ -173,7 +186,7 @@
 }
 
 .badge:hover {
-  width: 128px;
+  width: fit-content;
 }
 
 .badge:hover > .badge-icon {
@@ -186,7 +199,6 @@
 }
 
 .badge-text {
-  visibility: hidden;
   text-align: center;
 }
 

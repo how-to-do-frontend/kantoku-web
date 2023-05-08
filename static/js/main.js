@@ -15,27 +15,61 @@ function togglenavbar() {
     document.getElementById('navbar').classList.toggle("is-active");
     document.getElementById('navbar-burger').classList.toggle("is-active");
 }
-function search() {
-    document.getElementById('u-search-content').innerHTML = "";
-    $("#u-search").search({
-        onSelect: function (val) {
-          window.location.href = val.url;
-          return false;
-        },
-        apiSettings: {
-          url: "/api/v1/search?q={query}",
-          onResponse: function (resp) {
-            var r = {
-              results: [],
-            };
-            $.each(resp.users, function (index, item) {
-              r.results.push({
-                title: item.username,
-                url: "/u/" + item.id,
-                image: hanayoConf.avatars + "/" + item.id,
-              });
-            });
-            return r;
-          },
-        },
-      });}
+function setStyle (el, obj) {
+    Object.entries(obj).forEach(([k, v]) => {
+      el.style[k] = v
+    })
+  }
+
+
+function insertCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+async function searchUser (querry) {
+    // eslint-disable-next-line no-undef
+    const content = document.getElementById('u-search-content')
+    content && (content.innerHTML = '')
+    if (querry.length != 0) {
+        axios.get('https://fysix.xyz/apiv1/search?q=' + querry)
+        .then(r => {
+            r = r.data
+            console.log(r);
+            if (r.length != 0) {
+              content && content.removeAttribute('style')
+                content.innerHTML = ""
+                for (el of r) {
+                    console.log(el);
+                    const result = ({
+                    title: el.name,
+                    url: '/u/' + el.id,
+                    image: '//a.fysix.xyz/' + el.id
+                    })
+                    const root = document.createElement('a')
+                    root.href = result.url
+                    root.className = 'navbar-item'
+                    const image = document.createElement('img')
+                    image.src = result.image
+                    setStyle(image, {
+                    width: '3rem',
+                    maxHeight: '3rem',
+                    backgroundSize: 'cover',
+                    borderRadius: '0.5em'
+                    })
+                    root.appendChild(image)
+                    const textSpan = document.createElement('span')
+                    setStyle(textSpan, {
+                    marginLeft: '5px',
+                    fontWeight: 700,
+                    fontSize: '1.2em',
+                    color: 'rgba(255,255,255,0.9)'
+                    })
+                    textSpan.innerText = result.title
+                    root.appendChild(textSpan)
+                    content && content.appendChild(root)
+    }}});
+    } else {
+      content && setStyle(content, {
+        display: 'none'
+      })
+    }
+  }

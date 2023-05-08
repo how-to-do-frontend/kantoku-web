@@ -318,7 +318,9 @@ a.foot-link {
   margin-top: 28px;
   border-radius: 10px;
 }
-
+.search-name {
+  display: inline-block;
+}
 .paper-snackbar.is-success {
   background-color: #5ebf40;
 }
@@ -528,7 +530,10 @@ a.foot-link {
   width: 200px;
   height: 200px;
 }
-
+.search-results {
+  align-items: center;
+  height: 200%;
+}
 .score-dial-layer {
   position: absolute;
   left: 0;
@@ -769,6 +774,6 @@ body::-webkit-scrollbar-thumb {
   transition: box-shadow 0.1s ease, border-color 0.1s ease;
   box-shadow: none;
 }
-#u-search:active::after {
+#u-search::after {
   
 }

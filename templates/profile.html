@@ -37,15 +37,15 @@
                     <div class="map-title-block">
                         <div class="map-title">
                             <a class="beatmap-link" v-bind:href="'https://osu.ppy.sh/b/' + map.beatmap.id">
-                                <% map.beatmap.artist %> - <% map.beatmap.title %> [<% map.beatmap.version %>] +<%map.mods_readable%> <!--<span v-if="map.mods != 0">+ <% modsStr(map.mods) %></span>-->
+                                <% map.beatmap.artist %> - <% map.beatmap.title %> [<% map.beatmap.version %>] <!--<span v-if="map.mods != 0">+ <% modsStr(map.mods) %></span>-->
                             </a>
                         </div>
                         <div class="play-stats">
-                            <% addCommas(map.score) %> / <% map.max_combo %><b>x</b>
+                            <% addCommas(map.score) %> / <% map.max_combo %><b>x</b> +<%map.mods_readable%>
                         </div>
                         <div class="map-date">
                             <time>
-                                <% timeago.format(map.play_time) %>
+                                <% timeago.format(map.play_time + ' UTC+10') %>
                             </time>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
                         <div class="score-details_right-block">
                             <div class="score-details_pp-block">
                                 <div class="map-pp">
-                                    <% map.pp.toFixed() %><span class="map-pp-unit">pp</span>
+                                    <% addCommas(map.pp.toFixed()) %><span class="map-pp-unit">pp</span>
                                 </div>
                                 <div class="map-acc">accuracy:&nbsp;<b>
                                         <% map.acc.toFixed(2) %>%
@@ -244,10 +244,10 @@
             <div class="bar-selection badge-selects">
                 {% for b in badges %}
                     <div class="badge">
-                        <div class="badge-icon" style="margin: 8px 2px 7px {{ b[2] }}px">
+                        <div class="badge-icon" style="margin: 8px 2px 7px {{ b[2] }}px; color: {{ b[3] }};">
                             <i class="fa-solid {{ b[1] }}"></i>
                         </div>
-                        <div class="badge-text">{{ b[0] }}</div>
+                        <span style=" color: {{ b[3] }};">{{ b[0] }}</span>
                     </div>
                 {% endfor %}
             </div>

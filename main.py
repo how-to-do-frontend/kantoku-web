@@ -14,6 +14,7 @@ from cmyui.logging import Ansi
 from cmyui.logging import log
 from cmyui.mysql import AsyncSQLPool
 from cmyui.version import Version
+from cmyui.osu import Mods
 from countries_dict import country_dict
 from objects import glob
 
@@ -62,6 +63,9 @@ def getTotalUsers() -> int:
     totalJson = requests.get("https://api.fysix.xyz/get_player_count")
     totalUsers = totalJson.json()['counts']['total']
     return totalUsers
+@app.template_global()
+def modsStr(mods) -> str:
+    return Mods(mods)
 @app.template_global()
 async def getHighestPpPlay() -> int:
     yes = await glob.db.fetchall("SELECT pp FROM scores WHERE mode=4 AND status=2 ORDER BY pp DESC LIMIT 1;")
