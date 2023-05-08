@@ -1,6 +1,7 @@
 <script type="text/javascript">
     var the_domain = '{{ domain() }}'
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
 <nav id="navbar" class="navbar is-primary">
     <div class="navbar-brand">
         <a class="navbar-item navbar-logo" href="/home">
@@ -51,14 +52,15 @@
         <div class="navbar-end">
             <div class="navbar-item has-dropdown is-hoverable" style="align-items: center;">
                 <div class="navbar-search">
-                    <input autocomplete="off" type="text" placeholder="Looking for someone?" id="u-search" oninput="search()">
+                    <input autocomplete="off" type="text" placeholder="Looking for someone?" id="u-search" oninput="searchUser(this.value)">
                 </div>
-                <div id="u-search-content" class="navbar-dropdown" style="display: none;">
+                <div id="u-search-content" class="hidden navbar-dropdown" style="display: none;">
                 </div>
             </div>
             {% if session.authenticated %}
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">
+                    <img src="https://a.fysix.xyz/{{ session.user_data['id'] }}" style="height: 100%; margin-right: 7px; border-radius: 9001px;">
                     {{ session.user_data['name'] }}
                 </a>
                 <div class="navbar-dropdown">

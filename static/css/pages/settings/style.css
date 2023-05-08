@@ -10,7 +10,9 @@
   position: relative;
   border-radius: 8px;
 }
-
+.country-select {
+  background: hsl(191, 10%, 25%);
+}
 .title-block {
   height: auto;
   width: auto;
@@ -1046,6 +1048,39 @@ input:checked+label.checkbox:hover {
 .input {
   background-color: hsl(191, 12%, 18%);
   max-width: 272px;
+}
+.country-select.classic {
+  background-image:
+    linear-gradient(45deg, transparent 50%, blue 50%),
+    linear-gradient(135deg, blue 50%, transparent 50%),
+    linear-gradient(to right, skyblue, skyblue);
+  background-position:
+    calc(100% - 20px) calc(1em + 2px),
+    calc(100% - 15px) calc(1em + 2px),
+    100% 0;
+  background-size:
+    5px 5px,
+    5px 5px,
+    2.5em 2.5em;
+  background-repeat: no-repeat;
+}
+
+.country-select.classic:focus {
+  background-image:
+    linear-gradient(45deg, white 50%, transparent 50%),
+    linear-gradient(135deg, transparent 50%, white 50%),
+    linear-gradient(to right, gray, gray);
+  background-position:
+    calc(100% - 15px) 1em,
+    calc(100% - 20px) 1em,
+    100% 0;
+  background-size:
+    5px 5px,
+    5px 5px,
+    2.5em 2.5em;
+  background-repeat: no-repeat;
+  border-color: grey;
+  outline: 0;
 }
 
 .avatar-flex {

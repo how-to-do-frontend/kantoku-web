@@ -380,9 +380,12 @@ async def profile_select(id):
     )
 
     # no user and no bot page
-    if not user_data or user_data["id"] == 1:
+    if not user_data:
         return (await render_template('404.html'), 404)
-
+    if id == 1:
+        return await render_template('bancho.html')
+    elif id == 2:
+        return await render_template('peppy.html')
     # make sure mode & mods are valid args
     if mode is not None and mode not in VALID_MODES:
         return (await render_template('404.html'), 404)
@@ -398,15 +401,15 @@ async def profile_select(id):
     badges = []
 
     if user_data["priv"] & Privileges.Dangerous:
-        badges.append(("Developer", "fa-code", 7))
+        badges.append(("Developer", "fa-code", 7, "rgb(157, 227, 255)"))
     if user_data["priv"] & Privileges.Admin:
-        badges.append(("Administrator", "fa-user", 9.6))
+        badges.append(("Admin", "fas fa-star", 9.6, "rgb(254, 255, 157)"))
     if user_data["priv"] & Privileges.Mod:
         badges.append(("Moderator", "fa-user-check", 8))
     if user_data["priv"] & Privileges.Nominator:
-        badges.append(("Nominator", "fa-pen", 9))
+        badges.append(("Nominator", "fas fa-music", 9, "rgb(147, 245, 160)"))
     if user_data["priv"] & Privileges.Supporter:
-        badges.append(("Donator", "fa-dollar-sign", 11.4))
+        badges.append(("Supporter", "fas fa-heart", 11.4, "rgb(255, 157, 245)"))
 
     return await render_template('profile.html', user=user_data, mode=mode, mods=mods, badges=badges)
 @frontend.route('/score/<score_id>')
