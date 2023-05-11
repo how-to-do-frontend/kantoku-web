@@ -10,13 +10,13 @@ a:hover {
 }
 
 .main-block {
-  background-color: hsl(140, 10%, 15%);
+  background-color: hsl(var(--main), 10%, 15%);
   margin-top: 0;
   width: auto;
 }
 
 .leaderboard-banner {
-  background-image: linear-gradient(hsl(140, 15%, 15%, 20%), hsl(140, 25%, 25%, 60%)), url("https://wallpapercave.com/wp/wp7441554.jpg");
+  background-image: linear-gradient(hsl(var(--main), 15%, 15%, 20%), hsl(var(--main), 25%, 25%, 60%)), url("https://wallpapercave.com/wp/wp7441554.jpg");
   /*background-image: url("https://wallpapercave.com/wp/wp7441554.jpg");*/
   height: 194px;
   border-radius: 0;
@@ -39,7 +39,7 @@ a:hover {
   color: #222;
   height: 38px;
   font-size: 12px;
-  background-color: hsl(140, 15%, 25%);
+  background-color: hsl(var(--main), 15%, 25%);
 }
 
 .leaderboard-main-bg {
@@ -65,7 +65,7 @@ tr td {
 .column-player-rank {
   padding: 0 10px;
   text-align: center;
-  background-color: hsl(140, 15%, 27%) !important;
+  background-color: hsl(var(--main), 15%, 27%) !important;
   min-width: 44px;
   font-weight: 600;
   font-size: 13px;
@@ -108,7 +108,7 @@ tr td {
 
 tr.leaderboard-column td {
   font-weight: 600;
-  border-bottom: hsl(140, 20%, 30%);
+  border-bottom: hsl(var(--main), 20%, 30%);
   transition: 0.1s background-color;
   color: #fff !important;
   text-align: center;
@@ -120,7 +120,7 @@ table th {
 }
 
 .leaderboard-column:hover td:not(:first-child) {
-  background-color: hsl(140, 20%, 30%);
+  background-color: hsl(var(--main), 20%, 30%);
 }
 
 .main-banner {
@@ -299,7 +299,7 @@ table th {
   border-radius: 5px;
 }
 .flag-dropdown, .noUi-tooltip {
-  background-color: hsl(140, 15%, 5%) !important;
+  background-color: hsl(var(--main), 15%, 5%) !important;
   filter: opacity(0.95);
   border-radius: 4px;
   padding: 5px;
@@ -310,7 +310,7 @@ table th {
   opacity: 0;
   transition: 0.3s visibility, 0.3s opacity;
   min-width: 110px;
-  max-width: 1403px;
+  max-width: 2303px;
   width: max-content;
   text-align: center;
   font-weight: 600;

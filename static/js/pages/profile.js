@@ -32,7 +32,7 @@ new Vue({
                         out: [],
                         load: true,
                         more: {
-                            limit: 5,
+                            limit: 6,
                             full: true
                         }
                     }

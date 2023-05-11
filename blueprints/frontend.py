@@ -247,6 +247,8 @@ async def settings_custom_post():
     files = await request.files
     banner = files.get('banner')
     background = files.get('background')
+    form = await request.form
+    colour = form.get('color_value')
     ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif']
 
     # no file uploaded; deny post
@@ -282,7 +284,7 @@ async def settings_custom_post():
                 os.remove(background_file_with_ext)
 
         await background.save(f'{background_file_no_ext}{file_extension}')
-
+    await glob.db.execute(f"update users set custom_colour={colour} where id={session['user_data']['id']}")
     return await flash_with_customizations('success', 'Your customisation has been successfully changed!', 'settings/custom')
 
 
@@ -373,7 +375,7 @@ async def profile_select(id):
     mode = request.args.get('mode', 'std', type=str) # 1. key 2. default value
     mods = request.args.get('mods', 'vn', type=str)
     user_data = await glob.db.fetch(
-        'SELECT name, safe_name, id, priv, country, userpage_content '
+        'SELECT name, safe_name, id, priv, country, userpage_content, custom_colour '
         'FROM users '
         'WHERE safe_name = %s OR id = %s LIMIT 1',
         [utils.get_safe_name(id), id]

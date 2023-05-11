@@ -1,1 +1,52 @@
-TODO
+{% extends 'base.html' %}
+{% block title %} Home {% endblock %}
+{% block header %}
+<link rel="stylesheet" href="/static/css/pages/home.css">
+<link rel="stylesheet" href="/static/css/pages/profile.css">
+{% endblock %}
+{% block content %}
+{% if flash %}
+<div class='noti-banner noti-banner-warning'>
+   <div class="container">
+      <div class="noti-column">
+         <div class='noti-col noti-col-icon'></div>
+         <div class='noti-col noti-col-label'>
+            <div class='noti-bannertype'>
+               {% if status=='error' %}
+               Warning
+               {% elif status=='success' %}
+               Notice
+               {% endif %}
+            </div>
+            <div class='noti-bannertext'>
+               {% if status=='error' %}
+               Uh oh! Be careful!
+               {% elif status=='success' %}
+               Hey! Listen!
+               {% endif %}
+            </div>
+         </div>
+         <div class='noti-banner-text'>
+            {{ flash }}
+         </div>
+      </div>
+   </div>
+</div>
+{% endif %}
+<div class="log-block">
+    <div class="header">
+        <div class="title">
+            <i class="fas fa-address-book"></i> Server Rules
+        </div>
+    </div>
+    <div class="subtitle has-text-centered">
+      1. Any form of hacking will be punished with a restriction.<br/>
+      1a. Chatter and other broken filters are included.<br/>
+      2. Sharing or boosting an account is not allowed, and will be met with a ban.<br/>
+      3. Please do not exploit any vulnerabilities or the server itself. If any are found, please be responsible and report it to a developer.<br/>
+      4. No inappropiate usernames.<br/>
+      4a. No impersonating public figures.<br/>
+      5. Use common sense.
+    </div>
+</div>
+{% endblock %}

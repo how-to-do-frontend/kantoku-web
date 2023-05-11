@@ -4,7 +4,6 @@
 {% block header %}
 <script src="/static/js/asserts/vue.js"></script>
 <script src="/static/js/asserts/vue-axios.js"></script>
-
 <script>
     var mode = "{{ mode }}";
     var mods = "{{ mods }}";
@@ -89,8 +88,8 @@
                                 </a>
                             </td>
                             <td v-if="sort == 'pp' || sort == 'rscore'">
-                                <% (sort=='pp' ? user.pp+'pp' : "" ) %>
-                                    <% (sort=='rscore' ? scoreFormat(user.rscore) : "" ) %>
+                                <% addCommas((sort=='pp' ? user.pp+'pp' : "" )) %>
+                                    <% addCommas((sort=='rscore' ? scoreFormat(user.rscore) : "" )) %>
                             </td>
                             <td>
                                 <% user.acc.toFixed(2) %>%

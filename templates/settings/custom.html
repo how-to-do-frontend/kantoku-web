@@ -51,6 +51,13 @@
                   </label>
                 </div>
               </div>
+              <div class="single-block-content avatar-block-content">
+                <h4 style="margin-bottom: 4px;">Custom profile color</h4>
+                <input type="range" oninput="colorsetter()" id="color_value" name="color_value"
+                min="0" max="1000" class="color_value">
+                <label for="color" checked="true">Color value</label>
+                <input type="number" oninput="colorsetter_manual()" id="colorsetter-manual">
+              </div>
               <div class="custom-button buttons mt-6">
                 <button class='button is-primary' type='submit'><span class='icon is-small'><i class='fas fa-check'></i></span><span>Save</span></button>
               </div>
@@ -100,7 +107,16 @@
       });
   </script>
 </div>
-
+<script>
+  function colorsetter(){
+      var x = document.getElementById("color_value").value;
+      $('html').css('--main', x);
+  }
+  function colorsetter_manual(){
+      var x = document.getElementById("colorsetter-manual").value;
+      $('html').css('--main', x);
+  }
+  </script>
 {% if flash %}
 <div class='noti-banner noti-banner-warning'>
   <div class="container">
@@ -133,6 +149,11 @@
 {% endblock %}
 
 {% block bottom %}
+{% if getUserColor(session['user_data']['id']) != 230 %}
+<script>
+    $('html').css('--main', {{ getUserColor(session['user_data']['id']) }});
+</script>
+{% endif %}
 <style>
     {% if customizations['background'] == True %}
         body {

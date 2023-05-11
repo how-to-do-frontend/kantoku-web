@@ -1,7 +1,4 @@
-.main-block {
-  border-top-right-radius: 20px;
-  border-top-left-radius: 20px;
-}
+
 .clan_tag {
   color:#47732c;
   text-shadow: -1px 1px 0 #000,
@@ -10,15 +7,16 @@
 				-1px -1px 0 #000;
 }
 .second-block {
-  background: hsl(140, 12%, 15%);
+  background: hsl(var(--main), 12%, 15%);
 }
 
 .stats-block {
   width: 100%;
-  background: hsl(140, 25%, 25%);
+  background: hsl(var(--main), 25%, 25%);
   padding: 9.5px;
   margin-bottom: 9.5px !important;
 }
+
 
 .country {
   font-size: 24px;
@@ -44,7 +42,7 @@
   align-items: flex-end;
   border-top-right-radius: 20px;
   border-top-left-radius: 20px;
-  background: hsl(140, 30%, 50%);
+  background: hsl(var(--main), 30%, 50%);
   position: relative;
   overflow: hidden;
 }
@@ -87,11 +85,12 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 10px 250px;
-  width: 100%;
   transition: 0.2s ease;
+  width: fit-content;
+  padding: 10px 16px 10px 40px;
+  margin-left: 220px;
+  border-top-right-radius: 16px;
 }
-
 .bar-selection {
   width: 100%;
   height: 60px;
@@ -133,12 +132,15 @@
 }
 
 .mode-selects {
-  background: hsl(140, 25%, 22%);
+  background: hsl(var(--main), 25%, 22%);
 }
 
 .badge-selects {
-  background: hsl(140, 16%, 20%);
+ background: hsl(var(--main), 16%, 20%);
+ display: flex;
+flex-direction: row;
 }
+
 
 .select-left {
   display: flex;
@@ -318,7 +320,7 @@ html {
   font-size: 20px;
   padding: 5px;
   font-weight: 500;
-  background: hsl(140, 30%, 38%);
+  background: hsl(var(--main), 30%, 38%);
 }
 
 .column.is-1,
@@ -338,7 +340,7 @@ html {
 
 .header {
   padding: 10px 10px;
-  background: hsl(140, 30%, 50%);
+  background: hsl(var(--main), 30%, 50%);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 }
@@ -350,13 +352,14 @@ html {
 .scores {
   background: content-box;
   transition: 0.2s transform ease;
-  background: hsl(140, 20%, 20%);
+  background: hsl(var(--main), 20%, 20%);
   padding: 6px;
 }
 
 .map-single {
   height: 72px;
   min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -364,7 +367,7 @@ html {
   margin: 8px 0;
   justify-content: space-between;
   overflow: hidden;
-  background: hsl(140, 25%, 25%);
+  background: hsl(var(--main), 25%, 25%);
   transition: 0.2s ease;
   cursor: pointer;
 }
@@ -389,7 +392,7 @@ html {
   transform: translateY(-1px);
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04),
     0 16px 24px rgba(0, 0, 0, 0.04), 0 24px 32px rgba(0, 0, 0, 0.04);
-  background: hsl(140, 30%, 30%);
+  background: hsl(var(--main), 30%, 30%);
 }
 
 .map-single:first-child {
@@ -503,7 +506,7 @@ html {
   flex-direction: row;
   align-items: flex-end;
   height: 100%;
-  min-width: 140px;
+  min-width: 230px;
   justify-content: center;
   padding-right: 14px;
   padding-left: 20px;
@@ -552,10 +555,7 @@ html {
 
 .beatmaps {
   width: 100%;
-  display: grid;
-  grid-gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(399px, 312px));
-  background: hsl(140, 20%, 20%);
+  background: hsl(var(--main), 20%, 20%);
   padding: 6px 6px 12px 6px;
 }
 
@@ -575,12 +575,12 @@ html {
 }
 
 .beatmap-block {
-  background-color: hsl(140, 25%, 25%);
+  background-color: hsl(var(--main), 25%, 25%);
   color: #fff;
 }
 
 .beatmap-block:hover {
-  background-color: hsl(140, 25%, 30%);
+  background-color: hsl(var(--main), 25%, 30%);
   transform: scale(1.01);
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04),
     0 16px 24px rgba(0, 0, 0, 0.04), 0 24px 32px rgba(0, 0, 0, 0.04);
@@ -613,13 +613,13 @@ html {
 }
 
 .beatmap-footer .target-button {
-  background-color: hsl(140, 25%, 30%);
+  background-color: hsl(var(--main), 25%, 30%);
   border-radius: 6px;
   padding: 4.5px 7px;
   font-size: 12px;
   margin-left: 10px;
   transition: 0.2s background-color;
-  color: hsl(140, 65%, 75%);
+  color: hsl(var(--main), 65%, 75%);
 }
 
 .beatmap-preview {
@@ -655,12 +655,12 @@ span.beatmap-mapper {
   width: 100%;
   display: flex;
   justify-content: center;
-  background: hsl(140, 20%, 20%);
+  background: hsl(var(--main), 20%, 20%);
 }
 
 .show-button {
   padding: 3px 42px;
-  background: hsl(140, 25%, 25%);
+  background: hsl(var(--main), 25%, 25%);
   margin: 0px 8px 8px 8px;
   text-align: center;
 }
@@ -719,8 +719,8 @@ span.beatmap-mapper {
     opacity: 0;
   }
   .profile-avatar {
-    width: 140px;
-    height: 140px;
+    width: 230px;
+    height: 230px;
     margin-top: -10rem;
     border-radius: 15px;
     object-fit: cover;

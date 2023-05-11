@@ -79,6 +79,9 @@ async def getHighestPpPlayName() -> str:
     yes3 = await glob.db.fetchall(f"SELECT name FROM users WHERE id={int(await getHighestPpPlayID())}")
     return yes3[0]["name"]
 @app.template_global()
+async def getUserColor(id):
+    return await glob.db.fetchall(f"SELECT custom_colour FROM users WHERE id={id}")
+@app.template_global()
 def captchaKey() -> str:
     return glob.config.hCaptcha_sitekey
 @app.template_global()
