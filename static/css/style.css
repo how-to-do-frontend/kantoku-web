@@ -28,7 +28,7 @@ html {
 .footer {
   padding: 20px;
   margin-top: 39px;
-  background: hsl(140, 45%, 45%)
+  background: hsl(var(--main), 45%, 45%)
 }
 
 .main-block {
@@ -88,7 +88,7 @@ html {
 }
 
 .is-weeb {
-  background: hsl(140, 30%, 50%);
+  background: hsl(var(--main), 30%, 50%);
   border-top-right-radius: 16px;
   border-top-left-radius: 16px;
 }
@@ -167,9 +167,9 @@ a.foot-link {
   transition: 0.2s ease; /* for responsive animation */
 }
 
-@media (min-width: 1140px) {
+@media (min-width: 1230px) {
   #app {
-      width: 1140px;
+      width: 1230px;
   }
 }
 
@@ -182,7 +182,7 @@ a.foot-link {
   width: 100%;
   transition: 0.2s ease;
   min-height: 0rem;
-  background-color: hsl(140, 50%, 50%);
+  background-color: hsl(var(--main), 50%, 50%);
 }
 
 .navbar-logo {
@@ -197,7 +197,7 @@ a.foot-link {
 .minimized {
   width: 100%;
   top: 0;
-  background-color: hsl(140, 30%, 50%);
+  background-color: hsl(var(--main), 30%, 50%);
 }
 
 .minimized.navbar {
@@ -294,15 +294,15 @@ a.foot-link {
 .input,
 .select select,
 .textarea {
-  background-color: hsl(140, 12%, 18%);
+  background-color: hsl(var(--main), 12%, 18%);
 }
 
 .bg-accent {
-  background-color: hsl(140, 30%, 50%);
+  background-color: hsl(var(--main), 30%, 50%);
 }
 
 .bg-seccond {
-  background-color: hsl(140,10%,15%);
+  background-color: hsl(var(--main),10%,15%);
 }
 
 /* auth notification */
@@ -336,7 +336,7 @@ a.foot-link {
   padding: 8px;
   font-size: 12px;
   color: #fff;
-  background-color: hsl(140, 25%, 20%);
+  background-color: hsl(var(--main), 25%, 20%);
   z-index: 1;
   flex-direction: column;
   text-align: center;
@@ -405,7 +405,7 @@ a.foot-link {
   position: absolute;
   content: "";
   height: 3px;
-  background-color: hsl(140, 50%, 50%);
+  background-color: hsl(var(--main), 50%, 50%);
   border-radius: 10px;
   left: 0;
   bottom: 0;
@@ -494,7 +494,7 @@ a.foot-link {
 
 .score-beatmap {
   padding: 20px;
-  background-color: hsla(140, 50%, 50%, 0.7) !important;
+  background-color: hsla(var(--main), 50%, 50%, 0.7) !important;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
 }
@@ -547,7 +547,7 @@ a.foot-link {
   justify-content: center;
   align-items: center;
   font-size: 125px;
-  text-shadow: 0 0 10px hsl(140);
+  text-shadow: 0 0 10px hsl(230);
   padding-top: 0.15em;
 }
 
@@ -577,7 +577,7 @@ a.foot-link {
   height: 100%;
   width: 100%;
   content: "";
-  background-color: hsla(140, 40%, 40%, 0.7) !important;
+  background-color: hsla(var(--main), 40%, 40%, 0.7) !important;
 }
 
 @media (min-width: 900px) {
@@ -661,7 +661,7 @@ a.foot-link {
   display: flex;
   flex-direction: column;
   text-align: center;
-  background: hsl(140, 25%, 20%);
+  background: hsl(var(--main), 25%, 20%);
   padding: 10px;
   border-radius: 8px;
 }
@@ -680,13 +680,13 @@ a.foot-link {
 }
 
 .modaldata {
-  background-color: hsl(140, 27%, 18%);
+  background-color: hsl(var(--main), 27%, 18%);
   border-radius: 15px !important;
 }
 
 .is-disabled {
   opacity: 0.7;
-  background: hsl(140, 30%, 45%) !important;
+  background: hsl(var(--main), 30%, 45%) !important;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -742,12 +742,12 @@ a.foot-link {
 
 body::-webkit-scrollbar {
   width: 12px;
-  background-color: hsl(140, 10%, 25%);
+  background-color: hsl(var(--main), 10%, 25%);
   border-bottom-right-radius: 8px;
 }
 body::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background-color: hsl(140, 15%, 40%);
+  background-color: hsl(var(--main), 15%, 40%);
 }
 
 [v-cloak] {
@@ -773,7 +773,4 @@ body::-webkit-scrollbar-thumb {
   -webkit-transition: box-shadow 0.1s ease, border-color 0.1s ease;
   transition: box-shadow 0.1s ease, border-color 0.1s ease;
   box-shadow: none;
-}
-#u-search::after {
-  
 }
