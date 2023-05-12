@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %} Beatmap Info {% endblock %}
+
+{% block header %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js"></script>
+<script src="/static/js/asserts/vue.js"></script>
+<script src="/static/js/asserts/vue-axios.js"></script>
+
+<script>
+    var mode = 'std';
+    var mods = 'vn';
+    var sort = 'pp';
+    var bid = "{{ bid }}";
+    var sid = "{{ sid }}";
+    var domain = "{{ domain() }}";
+</script>
+
+<link rel="stylesheet" href="/static/css/pages/beatmap.css">
+{% endblock %}
+
+{% block content %}
+<div id="app" :class="(load ? 'load' : '')">
+    <div class="beatmap-banner main-banner">
+        <div class="main-selector">
+            <div class="left">
+                <a class="mode-select" v-bind:class="{ 'active': mode === 'std' }"
+                @click="LoadBeatmap(sort, 'std', mods)">
+                    <i class="mode-icon mode-osu"></i><span class="modetext"> osu!</span>
+                </a>
+                <a class="mode-select" v-bind:class="{ 'active': mode === 'taiko', 'disabled': mods === 'ap' }"
+                @click="LoadBeatmap(sort, 'taiko', mods)">  
+                    <i class="mode-icon mode-taiko"></i><span class="modetext"> osu!taiko</span>
+                </a>
+                <a class="mode-select" v-bind:class="{ 'active': mode === 'catch', 'disabled': mods === 'ap' }"
+                @click="LoadBeatmap(sort, 'catch', mods)">
+                    <i class="mode-icon mode-catch"></i><span class="modetext"> osu!catch</span>
+                </a>
+                <a class="mode-select" v-bind:class="{ 'active': mode === 'mania', 'disabled': mods === 'ap' || mods === 'rx' }"
+                @click="LoadBeatmap(sort, 'mania', mods)">
+                    <i class="mode-icon mode-mania"></i><span class="modetext"> osu!mania</span>
+                </a>
+            </div>
+            <div class="right">
+                <a class="mods-select" v-bind:class=" { 'active': mods === 'vn' }"
+                @click="LoadBeatmap(sort, mode, 'vn')">vn</a>
+                <a class="mods-select" v-bind:class=" { 'active': mods === 'rx', 'disabled': mode === 'mania' }"
+                @click="LoadBeatmap(sort, mode, 'rx')">rx</a>
+                <a class="mods-select" v-bind:class=" { 'active': mods === 'ap', 'disabled': mode === 'taiko' || mode === 'catch' || mode === 'mania'  }"
+                @click="LoadBeatmap(sort, mode, 'ap')">ap</a>
+            </div>
+        </div>
+        <div class="banner-bg" :style="'background-image: url(https://assets.ppy.sh/beatmaps/'+sid+'/covers/cover@2x.jpg)'"></div>
+    </div>
+
+    <div class="main-block">
+        <div class="temp-buttons">
+            <div class="buttons">
+                <a class="button is-primary" href="https://api.nerinyan.moe/d/869019">
+                    <strong>Download Map</strong>
+                </a>
+            </div>
+        </div>
+        <div class="leaderboard-main-bg table-responsive">
+            <div v-if="boards.length != undefined && boards.length != 0">
+                <table class="leaderboard-table table-responsive">
+                    <thead>
+                        <tr>
+                            <th class="t-heading"> Rank </th>
+                            <th class="t-heading t-heading--score"> </th>
+                            <th v-if="sort == 'pp' || sort == 'rscore'" class="t-heading table--selected">
+                                <% (sort=='pp' ? "PP" : "" ) %>
+                                    <% (sort=='rscore' ? "Score" : "" ) %>
+                            </th>
+                            <th class="t-heading"> Accuracy </th>
+                            <th class="t-heading t-heading--main"> Player </th>
+                            <th class="t-heading"> Max Combo (<% mapinfo.max_combo %>) </th>
+                            <th class="t-heading"> 300 </th>
+                            <th class="t-heading"> 100 </th>
+                            <th class="t-heading"> 50 </th>
+                            <th class="t-heading"> Miss </th>
+                            <th v-if="sort == 'pp' || sort == 'rscore'" class="t-heading">
+                                <% (sort=='pp' ? "Score" : "" ) %>
+                                    <% (sort=='rscore' ? "PP" : "" ) %>
+                            </th>
+                            <th class="t-heading t-heading--time"> Time </th>
+                            <th class="t-heading t-heading--mods"> Mods </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(user, index) in boards" class="leaderboard-column">
+                            <td class="column-player-rank">#<% index + 1 %>
+                            </td>
+                            <td class="column-player-score-rank">
+                                <div class="rank-single">
+                                    <div v-bind:class="'map-rank rank-'+user.grade">
+                                        <% user.grade.replace("X", "SS" ).replace("H", "" ) %>
+                                    </div>
+                                </div>
+                            </td>
+                            <td v-if="sort == 'pp' || sort == 'rscore'">
+                                <% (sort=='pp' ? user.pp.toFixed()+'pp' : "" ) %>
+                                    <% (sort=='score' ? scoreFormat(user.score) : "" ) %>
+                            </td>
+                            <td>
+                                <% user.acc.toFixed(2) %>%
+                            </td>
+                            <td class="column-player-name text-left">
+                                <a :title="flags[user.country.toUpperCase()]"
+                                    :style="'background-image: url(/static/images/flags/' + user.country.toUpperCase() + '.png)'"
+                                    class="player-flag">
+                                    <div class="flag-dropdown">
+                                        <% flags[user.country.toUpperCase()] %>
+                                    </div>
+                                </a>
+                                <a :style="'background-image: url(https://a.debian.moe/' + user.userid + ')'"
+                                    class="player-mini-image"
+                                ></a>
+                                <a :href="'/u/'+user.userid+'?mode='+mode+'&mods='+mods">
+                                    <% user.player_name %>
+                                </a>
+                            </td>
+                            <td>
+                                <% addCommas(user.max_combo) %>x
+                            </td>
+                            <td>
+                                <% addCommas(user.n300) %>
+                            </td>
+                            <td>
+                                <% addCommas(user.n100) %>
+                            </td>
+                            <td>
+                                <% addCommas(user.n50) %>
+                            </td>
+                            <td>
+                                <% addCommas(user.nmiss) %>
+                            </td>
+                            <td v-if="sort == 'pp' || sort == 'rscore'">
+                                <% (sort=='pp' ? scoreFormat(user.score) : "" ) %>
+                                    <% (sort=='score' ? user.pp+'pp' : "" ) %>
+                            </td>
+                            <td>
+                                <% timeago.format(user.play_time) %>
+                            </td>
+                            <td>
+                                <% getScoreMods(user.mods) %>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div v-else>
+                <div class="text-center">
+                    there are no players to display!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/asserts/vue-flags.js"></script>
+<script src="/static/js/pages/beatmap.js?123125415"></script>
+{% endblock %}
