@@ -192,6 +192,25 @@
 
 {% block content %}
 <div id="app">
+    {% if restricted %}
+<div class='noti-banner noti-banner-warning'>
+    <div class="container">
+      <div class="noti-column">
+        <div class='noti-col noti-col-icon'></div>
+        <div class='noti-col noti-col-label'>
+          <div class='noti-bannertype'>
+            <div class="noti-bannertext">
+                Warning
+            </div>
+            <div class="noti-banner-text">
+                This profile has been placed in restricted mode!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endif %}
     <div class="main-block">
         <div class="profile-bg">
             <div class="info-block">

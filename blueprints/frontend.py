@@ -380,6 +380,7 @@ async def profile_select(id):
         'WHERE safe_name = %s OR id = %s LIMIT 1',
         [utils.get_safe_name(id), id]
     )
+    restricted = user_data['priv'] and not Privileges.Normal
 
     # no user and no bot page
     if not user_data:
@@ -388,7 +389,8 @@ async def profile_select(id):
         return await render_template('bancho.html')
     elif id == 2:
         return await render_template('peppy.html')
-    # make sure mode & mods are valid args
+    if restricted and not session['user_data']['is_staff']:
+        return await render_template('restricted.html', user_d=user_data)
     if mode is not None and mode not in VALID_MODES:
         return (await render_template('404.html'), 404)
 
@@ -413,7 +415,73 @@ async def profile_select(id):
     if user_data["priv"] & Privileges.Supporter:
         badges.append(("Supporter", "fas fa-heart", 11.4, "rgb(255, 157, 245)"))
 
-    return await render_template('profile.html', user=user_data, mode=mode, mods=mods, badges=badges)
+    return await render_template('profile.html', user=user_data, mode=mode, mods=mods, badges=badges, restricted=restricted)
+# TODO: beatmap page create
+@frontend.route('/b/<bid>')
+@frontend.route('/s/<sid>')
+@frontend.route('/beatmaps/<bid>')
+# @frontend.route('/beatmapsets/<int:sid>')
+@frontend.route('/beatmapsets/<sid>')
+# @frontend.route('/beatmapsets/<int:sid>/<int:bid>/<str:mods>')
+async def beatmap(bid=0, sid=0):
+    MAP = None
+
+    if not sid == 0 and not bid == 0:
+        MAP = await glob.db.fetch(
+            'SELECT id, set_id, md5 '
+            'FROM maps '
+            'WHERE set_id = %s and id = %s LIMIT 1',
+            [sid, bid]
+        )
+    elif not sid == 0:
+        MAP = await glob.db.fetch(
+            'SELECT id, set_id, md5 '
+            'FROM maps '
+            'WHERE set_id = %s LIMIT 1',
+            [sid]
+        )
+    elif not bid == 0:
+        MAP = await glob.db.fetch(
+            'SELECT id, set_id, md5 '
+            'FROM maps '
+            'WHERE id = %s LIMIT 1',
+            [bid]
+        )
+
+    #no beatmap in db
+    if not MAP:
+        if not sid == 0:
+            req = requests.get(f"https://api.nerinyan.moe/search?q={sid}&option=s&nsfw=1&s=all").json()[0]
+        elif not bid == 0:
+            req = requests.get(f"https://api.nerinyan.moe/search?q={bid}&option=b&nsfw=1&s=all").json()[0]
+
+        if len(req) < 1:
+            return (await render_template('404.html'), 404)
+
+        requests.get(f"https://api.debian.moe/v1/get_map_info?id={req['beatmaps'][0]['id']}")
+        if not sid == 0 and not bid == 0:
+            MAP = await glob.db.fetch(
+                'SELECT id, set_id, md5 '
+                'FROM maps '
+                'WHERE set_id = %s and id = %s LIMIT 1',
+                [sid, bid]
+            )
+        elif not sid == 0:
+            MAP = await glob.db.fetch(
+                'SELECT id, set_id, md5 '
+                'FROM maps '
+                'WHERE set_id = %s LIMIT 1',
+                [sid]
+            )
+        elif not bid == 0:
+            MAP = await glob.db.fetch(
+                'SELECT id, set_id, md5 '
+                'FROM maps '
+                'WHERE id = %s LIMIT 1',
+                [bid]
+            )
+
+    return await render_template('beatmaps.html', bid=MAP['id'], sid=MAP['set_id'])
 @frontend.route('/score/<score_id>')
 @frontend.route('/score/<score_id>/<mods>')
 async def get_player_score(score_id:int=0, mods:str = "vn"):
