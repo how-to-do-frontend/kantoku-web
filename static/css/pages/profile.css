@@ -19,7 +19,7 @@
 
 
 .country {
-  font-size: 24px;
+  font-size: 17px;
 }
 .what {
   display: flex; /** set the container as flexbox **/
@@ -733,7 +733,10 @@ span.beatmap-mapper {
     width: 100%;
   }
 }
-
+.leaderboard-history {
+  padding: 24px 24px 12px 12px;
+  background: hsl(var(--main), 25%, 25%);
+}
 @media screen and (max-width: 770px) {
   .mode-text {
     display: none;
@@ -798,7 +801,9 @@ span.beatmap-mapper {
 .green {
   color: #8dc36b;
 }
-
+.red {
+  color: #d83a3a;
+}
 .fade-enter-active, .fade-leave-active {
   transition: opacity .5s;
 }

@@ -6,7 +6,9 @@ new Vue({
             flags: window.flags,
             boards : {},
             mapinfo : {},
+            diffs: {},
             bid : 0,
+            test_bid: bid,
             sid : 0,
             mods : 'vn',
             mode : 'std',
@@ -17,14 +19,36 @@ new Vue({
     },
     created() {
         this.LoadData(bid, sid, mode, mods);
+        this.LoadDiffs(sid);
         this.LoadBeatmap(sort, mode, mods);
     },
     methods: {
+        diffChange(event, mods, mode) {
+            if (mods != vn && mode != "std") {
+                window.location.replace(`${window.location.protocol}//${domain}/b/` + event.target.value + '?mode=' + mode + '?mods=' + mods);
+            }
+            if (mods != "vn") {
+                window.location.replace(`${window.location.protocol}//${domain}/b/` + event.target.value + '?mods=' + mods);
+            }
+            if (mode != "std") {
+                window.location.replace(`${window.location.protocol}//${domain}/b/` + event.target.value + '?mode=' + mode);
+            }
+            else {
+                window.location.replace(`${window.location.protocol}//${domain}/b/` + event.target.value);
+            }
+        },
         LoadData(bid, sid, mode, mods) {
             this.$set(this, 'mode', mode);
             this.$set(this, 'mods', mods);
             this.$set(this, 'bid', bid);
             this.$set(this, 'sid', sid);
+        },
+        LoadDiffs(sid) {
+            this.$axios.get(`${window.location.protocol}//api.${domain}/get_bmap_diffs`, { params: {
+                id: sid,
+            }}).then(res => {
+                this.diffs = res.data.map;
+            });
         },
         LoadBeatmap(sort, mode, mods) {
             if (window.event)
@@ -45,8 +69,7 @@ new Vue({
             }}).then(res => {
                 this.boards = res.data.scores;
             });
-
-            
+            // mapinfo           
             this.$axios.get(`${window.location.protocol}//api.${domain}/get_map_info`, { params: {
                 id: bid,
             }}).then(res => {
@@ -95,6 +118,11 @@ new Vue({
                 default: return -1;
             }
         },
+        handleDiffChange(bid) {
+            this.bid = bid;
+            console.log(this.bid);
+            this.LoadBeatmap(this.sort, this.mode, this.mods);
+        },
         StrtoModeInt() {
             switch (this.mode) {
                 case 'std':
@@ -118,6 +146,16 @@ new Vue({
                 case 3:
                     return 'mania';
             }
+        },
+        secondsToDhm(seconds) {
+            seconds = Number(seconds);
+            var h = Math.floor(seconds % (3600*24) / 3600);
+            var m = Math.floor(seconds % 3600 / 60);
+            
+            var sDisplay = seconds % 60 >= 10 ? seconds % 60 : "0" + seconds % 60;
+            var hDisplay = h + ":";
+            var mDisplay = m + ":";
+            return h > 0 ? hDisplay : "" + mDisplay + sDisplay;
         },
         getScoreMods(m, plus=true){
             /* eslint-disable */ 

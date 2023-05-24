@@ -18,6 +18,18 @@
       </div>
     </div>
     {% endif %} {% endmacro %}
+{% macro pinned_scores() %}
+<div class="log-blcok">
+    <div class="header">
+        <div class="title">
+            <i class="fas fa-trophy"></i> Pinned Scores
+        </div>
+    </div>
+    <div class="stats-block rank-block" style="padding: 12.5px">
+        <p>COMING SOON</p>
+    </div>
+</div>
+{% endmacro %}
 {% macro scores(title, id) %}
 <div class="log-block" v-bind:class="{ 'load' : data.scores.{{ id }}.load }">
     <div class="header">
@@ -172,7 +184,7 @@
 <script src="/static/js/asserts/vue-axios.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js"></script>
 <link rel="stylesheet" href="/static/css/pages/profile.css">
-<link href="https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro-v6@44659d9/css/all.min.css" rel="stylesheet" type="text/css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <meta content="{{ user['name'] }}'s profile | Kantoku" property="og:title"/>
 <meta property="og:type" content="website" />
 <meta property="og:description" content="{{user['name']}} is a Kantoku player from {{ cctoFullName(user['country']|upper)}}." />
@@ -216,11 +228,7 @@
             <div class="info-block">
                 <h1 class="title">
                     <p class="ranks">
-                        
-                        <span class="clan_tag bgf">{{ getClanTag(user['id'])}}</span>
                         <span class="bgf"> {{ user['name'] }}</span>
-                        
-                        
                     </p>
                 </h1>
                 <transition name="fade">
@@ -229,7 +237,8 @@
                         <img src="/static/images/flags/{{ user['country']|upper }}.png" class="profile-flag">
                         <span class="country">{{ cctoFullName(user['country']|upper)}}</span>
                         </div>  
-                        <a class='circle'>●</a> Offline
+                        <a class='circle red'>●</a> Last Seen {{ timeago.format((datetime.datetime.fromtimestamp(user["latest_activity"])),
+                        (datetime.datetime.now() + datetime.timedelta(seconds = 60 * 3.4))) }}
                     </div>
                     <div class="subtitle" v-else-if='data.status.online == true'>
                         <div class="what">
@@ -257,33 +266,6 @@
                 <img src="https://a.{{ domain() }}/{{ user['id']}}?{{timestamp()}}" alt="avatar" class="rounded-avatar profile-avatar"
                     onError="this.src='/static/images/avatar_notwork.png';">
             </div>
-            <div class="bar-selection mode-selects">
-                <div class="select-left">
-                    <a class="simple-banner-switch" v-bind:class="{ 'selected': mode === 'std' }"
-                        @click="ChangeModeMods('std',mods)"><i class="mode-icon mode-osu"></i><span
-                            class="mode-text">osu!</span></a>
-                    <a class="simple-banner-switch" v-bind:class="{ 'selected': mode === 'taiko', 'disabled': mods === 'ap' }"
-                        @click="ChangeModeMods('taiko',mods)"><i class="mode-icon mode-taiko"></i><span
-                            class="mode-text">osu!taiko</span></a>
-                    <a class="simple-banner-switch" v-bind:class="{ 'selected': mode === 'catch', 'disabled': mods === 'ap' }"
-                        @click="ChangeModeMods('catch',mods)"><i class="mode-icon mode-catch"></i><span
-                            class="mode-text">osu!catch</span></a>
-                    <a class="simple-banner-switch" v-bind:class="{ 'selected': mode === 'mania', 'disabled': mods === 'ap' || mods === 'rx' }"
-                        @click="ChangeModeMods('mania',mods)"><i class="mode-icon mode-mania"></i><span
-                            class="mode-text">osu!mania</span></a>
-                </div>
-                <div class="select-right">
-                    <a class="simple-banner-switch" v-bind:class=" { 'selected': mods === 'vn' }"
-                        @click="ChangeModeMods(mode,'vn')"><span class="mods-fulltext">Vanilla</span>
-                        <span class="mods-shorttext">VN</span></a>
-                    <a class="simple-banner-switch" v-bind:class=" { 'selected': mods === 'rx', 'disabled': mode === 'mania' }"
-                        @click="ChangeModeMods(mode,'rx')"><span class="mods-fulltext">Relax</span>
-                        <span class="mods-shorttext">RX</span></a>
-                    <a class="simple-banner-switch" v-bind:class=" { 'selected': mods === 'ap', 'disabled': mode === 'taiko' || mode === 'catch' || mode === 'mania'  }"
-                        @click="ChangeModeMods(mode,'ap')"><span class="mods-fulltext">Autopilot</span><span
-                            class="mods-shorttext">AP</span></a>
-                </div>
-            </div>
             {% if badges.length != 0 %}
             <div class="bar-selection badge-selects">
                 {% for b in badges %}
@@ -301,33 +283,35 @@
     <div class="second-block">
         <div class="columns is-marginless two-sides">
             <div class="column is-one-third" v-cloak>
-                <!--<div class="header" v-if='data.stats[`rank_global_${modegulag}`] != -1'>
-                    <div class="title">
-                        <i class="fas fa-user-friends"></i> Rank
+                <div class="sidebar-wrapper"  v-if='data.stats.out[modegulag].rank'>
+                    <div class="header" v-if='data.stats.out[modegulag].rank != 0'>
+                        <div class="title">
+                            <i class="fas fa-user-friends"></i> Rank
+                        </div>
+                    </div>
+                    <div class="stats-block rank-block">
+                        <table class="is-striped">
+                            <tbody>
+                                <tr>
+                                    <td>Global rank</td>
+                                    <td class="right-aligned">
+                                        <span id="global-rank">
+                                            <% '#' + data.stats.out[modegulag].rank %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Country rank</td>
+                                    <td class="right-aligned">
+                                        <span id="country-rank">
+                                            <% '#' + data.stats.out[modegulag].country_rank %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="stats-block rank-block" v-if='data.stats[`rank_global_${modegulag}`] != -1'>
-                    <table class="is-striped">
-                        <tbody>
-                            <tr>
-                                <td>Global rank</td>
-                                <td class="right-aligned">
-                                    <span id="global-rank">
-                                        <% '#' + data.stats.out[modegulag].rank %>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Country rank</td>
-                                <td class="right-aligned">
-                                    <span id="country-rank">
-                                         <% '#' + data.stats.out[modegulag].country_rank %>
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>-->
                 <div class="header">
                     <div class="title">
                         <i class="fas fa-chart-pie"></i> Statistics
@@ -421,7 +405,7 @@
                         </article>
                     </div>
                 </div>
-                <!--<div class="level-block">
+                <div class="level-block">
                     <div class="columns is-marginless is-2">
                         <div class="column level-bar is-paddingless">
                             <div class="progress-level"></div>
@@ -430,12 +414,24 @@
                             <% data.stats[`level_${modegulag}`] %>
                         </div>
                     </div>
-                </div>-->
+                </div>
             </div>
             <div class="column">
+                <div class="log-block leaderboard-history-block">
+                    <div class="header">
+                        <div class="title">
+                            <i class="fas fa-chart-line"></i> Leaderboard history
+                        </div>
+                    </div>
+
+                    <div class="leaderboard-history">
+                        <canvas id="leaderboard-history" style="width:100%; height: 120px;"></canvas>
+                    </div>
+                </div>
                 {{ userpage(user) }}
-                {{ scores('Best Scores', 'best')}}
-                {{ scores('Recent Scores', 'recent')}}
+                {{ scores('Pinned Scores', 'pinned') }}
+                {{ scores('Best Scores', 'best') }}
+                {{ scores('Recent Scores', 'recent') }}
                 {{ maps('Most Beatmaps Played', 'most')}}
             </div>
         </div>

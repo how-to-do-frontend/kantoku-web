@@ -6,7 +6,7 @@ import bcrypt
 import hashlib
 import os
 import time
-
+import requests
 from cmyui.logging import Ansi
 from cmyui.logging import log
 from cmyui.osu import Mods
@@ -20,7 +20,8 @@ from quart import render_template
 from quart import request
 from quart import session
 from quart import send_file
-
+import datetime
+import timeago
 from constants import regexes
 from objects import glob
 from objects import utils
@@ -32,7 +33,31 @@ VALID_MODES = frozenset({'std', 'taiko', 'catch', 'mania'})
 VALID_MODS = frozenset({'vn', 'rx', 'ap'})
 
 frontend = Blueprint('frontend', __name__)
+@frontend.route('/get_leaderboard_history')
+async def api_get_leaderboard_history():
+    user_id = request.args.get('uid')
+    mode = request.args.get('mode') or 0
 
+    if not await glob.db.fetch('SELECT 1 FROM users WHERE id = %s', [user_id]):
+        return b'{"status":404}'
+
+    data = {
+        'days': [],
+        'ranks': []
+    }
+    leaderboard_history = await glob.db.fetchall(
+        'SELECT player_rank FROM leaderboard_history '
+        'WHERE uid = %s and mode = %s '
+        'ORDER BY capture_time ASC '
+        'LIMIT 90',
+        [user_id, mode]
+    )
+
+    for day, history in enumerate(leaderboard_history):
+        data['days'].append(day + len(history))
+        data['ranks'].append(history['player_rank'])
+
+    return data
 def login_required(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
@@ -375,7 +400,7 @@ async def profile_select(id):
     mode = request.args.get('mode', 'std', type=str) # 1. key 2. default value
     mods = request.args.get('mods', 'vn', type=str)
     user_data = await glob.db.fetch(
-        'SELECT name, safe_name, id, priv, country, userpage_content, custom_colour '
+        'SELECT name, safe_name, id, priv, country, userpage_content, custom_colour, latest_activity '
         'FROM users '
         'WHERE safe_name = %s OR id = %s LIMIT 1',
         [utils.get_safe_name(id), id]
@@ -414,74 +439,29 @@ async def profile_select(id):
         badges.append(("Nominator", "fas fa-music", 9, "rgb(147, 245, 160)"))
     if user_data["priv"] & Privileges.Supporter:
         badges.append(("Supporter", "fas fa-heart", 11.4, "rgb(255, 157, 245)"))
+    if user_data["id"] == 76:
+        badges.append(('ily', "fas fa-heart", 11.4, "rgb(255,157,245)"))
 
-    return await render_template('profile.html', user=user_data, mode=mode, mods=mods, badges=badges, restricted=restricted)
-# TODO: beatmap page create
+    return await render_template('profile.html', datetime=datetime, timeago=timeago, user=user_data, mode=mode, mods=mods, badges=badges)
 @frontend.route('/b/<bid>')
-@frontend.route('/s/<sid>')
 @frontend.route('/beatmaps/<bid>')
-# @frontend.route('/beatmapsets/<int:sid>')
-@frontend.route('/beatmapsets/<sid>')
-# @frontend.route('/beatmapsets/<int:sid>/<int:bid>/<str:mods>')
-async def beatmap(bid=0, sid=0):
-    MAP = None
-
-    if not sid == 0 and not bid == 0:
+@frontend.route('/b/<bid>/')
+@frontend.route('/beatmaps/<bid>/')
+async def beatmap(bid):
+    mode = request.args.get('mode', 'std', type=str) # 1. key 2. default value
+    mods = request.args.get('mods', 'vn', type=str)
+    if bid.isdigit() == False:
+        return await flash('error', 'Please specify a diff id!', 'home')
+    else:
         MAP = await glob.db.fetch(
-            'SELECT id, set_id, md5 '
+            'SELECT * '
             'FROM maps '
-            'WHERE set_id = %s and id = %s LIMIT 1',
-            [sid, bid]
-        )
-    elif not sid == 0:
-        MAP = await glob.db.fetch(
-            'SELECT id, set_id, md5 '
-            'FROM maps '
-            'WHERE set_id = %s LIMIT 1',
-            [sid]
-        )
-    elif not bid == 0:
-        MAP = await glob.db.fetch(
-            'SELECT id, set_id, md5 '
-            'FROM maps '
-            'WHERE id = %s LIMIT 1',
+            'WHERE id = %s ',
             [bid]
         )
-
-    #no beatmap in db
-    if not MAP:
-        if not sid == 0:
-            req = requests.get(f"https://api.nerinyan.moe/search?q={sid}&option=s&nsfw=1&s=all").json()[0]
-        elif not bid == 0:
-            req = requests.get(f"https://api.nerinyan.moe/search?q={bid}&option=b&nsfw=1&s=all").json()[0]
-
-        if len(req) < 1:
-            return (await render_template('404.html'), 404)
-
-        requests.get(f"https://api.debian.moe/v1/get_map_info?id={req['beatmaps'][0]['id']}")
-        if not sid == 0 and not bid == 0:
-            MAP = await glob.db.fetch(
-                'SELECT id, set_id, md5 '
-                'FROM maps '
-                'WHERE set_id = %s and id = %s LIMIT 1',
-                [sid, bid]
-            )
-        elif not sid == 0:
-            MAP = await glob.db.fetch(
-                'SELECT id, set_id, md5 '
-                'FROM maps '
-                'WHERE set_id = %s LIMIT 1',
-                [sid]
-            )
-        elif not bid == 0:
-            MAP = await glob.db.fetch(
-                'SELECT id, set_id, md5 '
-                'FROM maps '
-                'WHERE id = %s LIMIT 1',
-                [bid]
-            )
-
-    return await render_template('beatmaps.html', bid=MAP['id'], sid=MAP['set_id'])
+        if not MAP:
+            return await flash('error', 'An error occurred, please notify to the developers!', 'home')
+    return await render_template('beatmaps.html', bid=MAP['id'], sid=MAP['set_id'], mode=mode, mods=mods)
 @frontend.route('/score/<score_id>')
 @frontend.route('/score/<score_id>/<mods>')
 async def get_player_score(score_id:int=0, mods:str = "vn"):
@@ -508,7 +488,7 @@ async def get_player_score(score_id:int=0, mods:str = "vn"):
 
     #Get Map
     map_info = await glob.db.fetch("SELECT artist, title, version AS diffname, creator, "
-                                   "diff, mode, set_id, max_combo FROM maps WHERE md5=%s", score['map_md5'])
+                                   "diff, mode, set_id, id, max_combo FROM maps WHERE md5=%s", score['map_md5'])
     if not map_info:
         log(f"Tried fetching scoreid {score_id} in {mods} (Route: /score/): Map with md5 '{score['map_md5']}' does not exist in database,"
         " that shouldn't happen unless you deleted it manually", Ansi.RED)
@@ -823,6 +803,12 @@ async def register_post():
                     6,  # rx!catch
                     8,  # ap!std
                 )]
+            )
+            await db_cursor.executemany(
+                'UPDATE stats '
+                'SET pp=0 '
+                'WHERE id=%s',
+                [user_id]
             )
 
     # (end of lock)

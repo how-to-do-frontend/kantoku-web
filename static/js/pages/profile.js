@@ -25,7 +25,23 @@ new Vue({
                             limit: 5,
                             full: true
                         }
-                    }
+                    },
+                    pinned: {
+                        out: [],
+                        load: true,
+                        more: {
+                            limit: 5,
+                            full: true
+                        }
+                    },
+                    first: {
+                        out: [],
+                        load: true,
+                        more: {
+                            limit: 5,
+                            full: true
+                        }
+                    },
                 },
                 maps: {
                     most: {
@@ -37,6 +53,7 @@ new Vue({
                         }
                     }
                 },
+                leaderboard_history: {},
                 status: {}
             },
             mode: mode,
@@ -57,6 +74,7 @@ new Vue({
             this.LoadMostBeatmaps();
             this.LoadScores('best');
             this.LoadScores('recent');
+            this.LoadScores('pinned');
         },
         LoadProfileData() {
             this.$set(this.data.stats, 'load', true);
@@ -67,8 +85,10 @@ new Vue({
                     }
                 })
                 .then(res => {
+                    console.log(res.data.player.stats)
                     this.$set(this.data.stats, 'out', res.data.player.stats);
                     this.data.stats.load = false;
+                    this.LoadLeaderboardHistory();
                 });
         },
         LoadScores(sort) {
@@ -109,6 +129,7 @@ new Vue({
                     }
                 })
                 .then(res => {
+                    console.log(res.data.player_status)
                     this.$set(this.data, 'status', res.data.player_status)
                 })
                 .catch(function (error) {
@@ -129,6 +150,7 @@ new Vue({
             this.data.scores.best.more.limit = 5
             this.data.maps.most.more.limit = 6
             this.LoadAllofdata();
+            this.LoadLeaderboardHistory();
         },
         AddLimit(which) {
             if (window.event)
@@ -178,6 +200,117 @@ new Vue({
                 default:
                     return 'Unknown: 🚔 not yet implemented!';
             }
+        },
+        LoadLeaderboardHistory() {
+            this.$axios.get(`https://new.fysix.xyz/get_leaderboard_history`, {
+                params: {
+                    uid: this.userid,
+                    mode: this.StrtoGulagInt(),
+                }
+            })
+                .then(res => {
+                    let wrapper_elem = $('.leaderboard-history-block');
+
+                    wrapper_elem.css({
+                        'display': 'block',
+                    });
+
+                    // Add current data to info.
+                    res.data.days.push(0);
+                    res.data.ranks.push(this.data.stats.out[this.modegulag].rank);
+
+                    new Chart("leaderboard-history", {
+                        type: "line",
+                        data: {
+                            labels: res.data.days,
+                            datasets: [{
+                                data: res.data.ranks,
+                                backgroundColor: "rgba(255, 204, 34, 0)",
+                                borderColor: "#FFCC22",
+                                borderWidth: 3,
+                                pointRadius: 0,
+                                pointLabelFontSize : 4,
+                                fill: false,
+                                lineTension: .3,
+                                borderCapStyle: 'round',
+                                borderDash: [],
+                                borderDashOffset: 0.0,
+                                borderJoinStyle: 'bevel',
+                                pointBorderWidth: 1,
+                                pointHoverRadius: 6,
+                                pointHoverBackgroundColor: "rgba(255, 204, 34, 1)",
+                                pointHoverBorderColor: "rgba(255, 204, 34, 1)",
+                                pointHoverBorderWidth: 2,
+                                pointHitRadius: 10,
+                                spanGaps: false,
+                            }]
+                        },
+                        options: {
+                            layout: {
+                                padding: 12,
+                            },
+                            legend: {
+                                display: false
+                            },
+                            hover: {
+                                intersect: false
+                            },
+                            tooltips: {
+                                mode: 'index',
+                                intersect: false,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(item, data) {
+                                        return res.data.days.length - 1 === item.index ? 'now' : `${res.data.days.length - item.index - 1} days ago`;
+                                    },
+                                    title: function(item, data) {
+                                        return `Global ranking #${item[0].value}`;
+                                    }
+                                }
+                            },
+                            plugins: {
+                                datalabels: {
+                                    display: false
+                                },
+                            },
+                            scales: {
+                                gridLines: {
+                                    offsetGridLines: 2,
+                                },
+                                yAxes: [{
+
+                                    ticks: {
+                                        display: false,
+                                        reverse: true,
+                                    },
+                                    gridLines: {
+                                        color: "rgba(0, 0, 0, 0)",
+                                        drawBorder: false,
+                                    }
+                                }],
+                                xAxes: [{
+                                    ticks: {
+                                        display: false
+                                    },
+                                    gridLines: {
+                                        color: "rgba(0, 0, 0, 0)",
+                                        drawBorder: false,
+                                    },
+                                }],
+                                x: {
+                                    grid: {
+                                        drawBorder: false,
+                                    },
+                                },
+                                y: {
+                                    grid: {
+                                        drawBorder: false,
+                                    },
+                                },
+                            }
+                        }
+                    });
+                });
         },
         addCommas(nStr) {
             return nStr.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

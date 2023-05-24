@@ -7,8 +7,8 @@
 <script src="/static/js/asserts/vue-axios.js"></script>
 
 <script>
-    var mode = 'std';
-    var mods = 'vn';
+    var mode = "{{ mode }}";
+    var mods = "{{ mods }}";
     var sort = 'pp';
     var bid = "{{ bid }}";
     var sid = "{{ sid }}";
@@ -49,17 +49,39 @@
                 @click="LoadBeatmap(sort, mode, 'ap')">ap</a>
             </div>
         </div>
-        <div class="banner-bg" :style="'background-image: url(https://assets.ppy.sh/beatmaps/'+sid+'/covers/cover@2x.jpg)'"></div>
+        <hr class="navbar-divider">
+        <select v-model="test_bid" class="diff-select" @change="diffChange($event, mods, mode)">
+        <option v-for="map in diffs" :href="'https://fysix.xyz/b/'+map.id" class="diff-div" :value="map.id"><%map.diff%> | <% map.version %></option>
+        </select>
+        <div class="banner-bg" :style="'background-image: url(https://assets.ppy.sh/beatmaps/'+sid+'/covers/cover@2x.jpg)'">
+            <div class="stats-block stats-params">
+                <div class="map-param">
+                    <i class="fas fa-clock"></i>
+                    <span class="param-text"><% secondsToDhm(mapinfo.total_length) %></span>
+                </div>
+                <div class="map-param">
+                    <i class="fas fa-star"></i>
+                    <span class="param-text"><% Number(mapinfo.diff).toFixed(2) %></span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="main-block">
+        <div class="text-center song-title"><strong><% mapinfo.artist %> - <% mapinfo.title %></strong></div> 
+        <div class="text-center">[<% mapinfo.version %>]</div>
         <div class="temp-buttons">
             <div class="buttons">
-                <a class="button is-primary" href="https://api.nerinyan.moe/d/869019">
+                <a class="button is-primary" :href="'https://catboy.best/d/'+sid">
+                    <i class="fas fa-download icon" style="margin-top: 6px;"></i>
                     <strong>Download Map</strong>
+                </a>
+                <a class="button is-primary" onclick="togglePlay()">
+                    <i class="fa-solid fa-play icon" id="preview-icon" style="margin-top:6;"></i><span id="PlayState"><strong>Preview Song</strong></span>
                 </a>
             </div>
         </div>
+
         <div class="leaderboard-main-bg table-responsive">
             <div v-if="boards.length != undefined && boards.length != 0">
                 <table class="leaderboard-table table-responsive">
@@ -73,7 +95,7 @@
                             </th>
                             <th class="t-heading"> Accuracy </th>
                             <th class="t-heading t-heading--main"> Player </th>
-                            <th class="t-heading"> Max Combo (<% mapinfo.max_combo %>) </th>
+                            <th class="t-heading text-left"> Max Combo (<% mapinfo.max_combo %>) </th>
                             <th class="t-heading"> 300 </th>
                             <th class="t-heading"> 100 </th>
                             <th class="t-heading"> 50 </th>
@@ -112,37 +134,34 @@
                                         <% flags[user.country.toUpperCase()] %>
                                     </div>
                                 </a>
-                                <a :style="'background-image: url(https://a.debian.moe/' + user.userid + ')'"
-                                    class="player-mini-image"
-                                ></a>
                                 <a :href="'/u/'+user.userid+'?mode='+mode+'&mods='+mods">
                                     <% user.player_name %>
                                 </a>
                             </td>
-                            <td>
+                            <td class="text-left">
                                 <% addCommas(user.max_combo) %>x
                             </td>
-                            <td>
+                            <td class="text-left">
                                 <% addCommas(user.n300) %>
                             </td>
-                            <td>
+                            <td class="text-left">
                                 <% addCommas(user.n100) %>
                             </td>
-                            <td>
+                            <td class="text-left">
                                 <% addCommas(user.n50) %>
                             </td>
-                            <td>
+                            <td class="text-left">
                                 <% addCommas(user.nmiss) %>
                             </td>
-                            <td v-if="sort == 'pp' || sort == 'rscore'">
+                            <td v-if="sort == 'pp' || sort == 'rscore'" class="text-left">
                                 <% (sort=='pp' ? scoreFormat(user.score) : "" ) %>
                                     <% (sort=='score' ? user.pp+'pp' : "" ) %>
                             </td>
-                            <td>
+                            <td class="text-left">
                                 <% timeago.format(user.play_time) %>
                             </td>
-                            <td>
-                                <% getScoreMods(user.mods) %>
+                            <td class="text-left">
+                                <% user.mods_readable %>
                             </td>
                         </tr>
                     </tbody>
@@ -159,4 +178,44 @@
 
 <script src="/static/js/asserts/vue-flags.js"></script>
 <script src="/static/js/pages/beatmap.js?123125415"></script>
+<audio id="BeatmapAudio" src="https://catboy.best/preview/audio/{{ bid }}" preload="auto"></audio>
+<script>
+    var mode = '{{ mode }}';
+    var mods = '{{ mods }}';
+    var sort = 'pp';
+    var bid = "{{ bid }}";
+    var PlayText = '<strong>Preview Song</strong>';
+    var PauseText = '<strong>Pause</strong>';
+    var myAudio = document.getElementById("BeatmapAudio");
+    var previewIcon = $("#preview-icon")
+    var isPlaying = false;
+    myAudio.volume = 0.1; 
+    var domain = "{{ domain() }}";
+    function togglePlay() {
+                if (isPlaying) {
+                    myAudio.pause()
+                    document.getElementById("PlayState").innerHTML = PlayText;
+                    document.getElementById("preview-icon").classList.remove('fa-pause');
+                    document.getElementById("preview-icon").classList.add('fa-play');
+                } else {
+                    myAudio.play();
+                    document.getElementById("PlayState").innerHTML = PauseText;
+                    document.getElementById("preview-icon").classList.remove('fa-play');
+                    document.getElementById("preview-icon").classList.add('fa-pause');
+                }
+            };
+            myAudio.onplaying = function() {
+                isPlaying = true;
+            };
+            myAudio.onpause = function() {
+                isPlaying = false;
+            };
+
+            myAudio.addEventListener("ended", function(){
+                myAudio.currentTime = 0;
+                document.getElementById("PlayState").innerHTML = PlayText;
+                    document.getElementById("preview-icon").classList.remove('fa-pause');
+                    document.getElementById("preview-icon").classList.add('fa-play');
+            });
+</script>
 {% endblock %}

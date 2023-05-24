@@ -64,6 +64,19 @@ def getTotalUsers() -> int:
     totalUsers = totalJson.json()['counts']['total']
     return totalUsers
 @app.template_global()
+async def is_favourited(u, m):
+        if await glob.db.fetchall(f"SELECT 1 FROM favourites WHERE userid = {u} AND setid = {m}"):
+            return True
+        else:
+            return False
+@app.template_global()
+async def favourite(u, m):
+    if is_favourited(u, m):
+        return
+    await glob.db.execute(
+        f"INSERT INTO favourites VALUES ({u}, {m}, UNIX_TIMESTAMP())"
+    )
+@app.template_global()
 def modsStr(mods) -> str:
     return Mods(mods)
 @app.template_global()
@@ -144,4 +157,4 @@ async def page_not_found(e):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    app.run(port=8000, debug=glob.config.debug) # blocking call
+    app.run(port=3000, debug=glob.config.debug) # blocking call
